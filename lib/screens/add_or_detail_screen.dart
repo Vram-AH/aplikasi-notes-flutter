@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:notes/models/note.dart';
@@ -41,10 +43,14 @@ class _AddOrDetailScreenState extends State<AddOrDetailScreen> {
   void didChangeDependencies() {
     if (init) {
       String id = ModalRoute.of(context).settings.arguments as String;
-      _note = Provider.of<Notes>(context).getNote(id);
+      // tambahkan fungsi if untuk validasi penambahan note baru
+      //jika id tidak sama dengan null baru cari note dari provider,
+      //jika null berarti note baru dan tidak perlu cari data atau id dalam provider
+      if (id != null) {
+        _note = Provider.of<Notes>(context).getNote(id);
+      }
       init = false;
     }
-
     super.didChangeDependencies();
   }
 
@@ -103,12 +109,16 @@ class _AddOrDetailScreenState extends State<AddOrDetailScreen> {
                   )),
             ),
           ),
-          // Untuk menampilkan kapan note terakhir diubah
-          // wrap dengan Positioned agar update waktu pindah ke bawah
-          Positioned(
+          // 1. Untuk menampilkan kapan note terakhir diubah
+          // 2. wrap dengan Positioned agar update waktu pindah ke bawah
+          // 3. tambahkan fungsi if karena ada penambahan note baru sedangkan note.updatedAt masih null
+          // 4. jika note.updated tidak null maka baru tampilkan kapan terakhir diubah note nya
+          if (_note.updatedAt != null)
+            Positioned(
               bottom: 10,
               right: 10,
-              child: Text('Terakhir diubah ${_convertDate(_note.updatedAt)}'))
+              child: Text('Terakhir diubah ${_convertDate(_note.updatedAt)}'),
+            ),
         ],
       ),
     );

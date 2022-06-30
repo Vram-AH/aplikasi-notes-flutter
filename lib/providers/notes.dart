@@ -61,8 +61,13 @@ class Notes with ChangeNotifier {
     }
   }
 
-// fungsi addNote untuk menambahkan note ke provider
-  void addNote(Note note) {
+// 1. fungsi addNote untuk menambahkan note ke provider
+  Future<void> addNote(Note note) async {
+    // 2. panggil fungsi postNote dan tambahkan await, future dan async
+    // 3. tampung return id dari API dengan membuat String id:
+    String id = await NoteApi().postNote(note);
+    // 4. sebelum tambahkan notes ke dalam _notes buat note.copyWith(id: id saat kita post)
+    note = note.copyWith(id: id);
     _notes.add(note);
     notifyListeners();
   }
@@ -72,7 +77,9 @@ class Notes with ChangeNotifier {
   }
 
   // Fungsi untuk update
-  void updateNote(Note newNote) {
+  Future<void> updateNote(Note newNote) async {
+    // sebelum updateNote ke dalam listnote panggil dulu fungsi NoteApi
+    await NoteApi().updateNote(newNote);
     int index = _notes.indexWhere((note) => note.id == newNote.id);
     _notes[index] = newNote;
     notifyListeners();
