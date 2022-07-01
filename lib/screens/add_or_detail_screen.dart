@@ -35,7 +35,7 @@ class _AddOrDetailScreenState extends State<AddOrDetailScreen> {
     } else {
       notesProvider.updateNote(_note);
     }
-    notesProvider.addNote(_note);
+    // notesProvider.addNote(_note);
     Navigator.of(context).pop();
   }
 
