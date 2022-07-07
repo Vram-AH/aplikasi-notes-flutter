@@ -21,19 +21,25 @@ class _AddOrDetailScreenState extends State<AddOrDetailScreen> {
     createdAt: null,
   );
 
-  bool init = true;
+  bool _init = true;
+  // tambah parameter untuk penanda sedang loading atau tidak saat simpan note
+  bool _isLoading = false;
 
   final _formKey = GlobalKey<FormState>();
 
-  void submitNote() {
+  void submitNote() async {
     _formKey.currentState.save();
+    // set isLoading jadi true
+    setState(() {
+      _isLoading = true;
+    });
     final now = DateTime.now();
     _note = _note.copyWith(updatedAt: now, createdAt: now);
     final notesProvider = Provider.of<Notes>(context, listen: false);
     if (_note.id == null) {
-      notesProvider.addNote(_note);
+      await notesProvider.addNote(_note);
     } else {
-      notesProvider.updateNote(_note);
+      await notesProvider.updateNote(_note);
     }
     // notesProvider.addNote(_note);
     Navigator.of(context).pop();
@@ -41,7 +47,7 @@ class _AddOrDetailScreenState extends State<AddOrDetailScreen> {
 
   @override
   void didChangeDependencies() {
-    if (init) {
+    if (_init) {
       String id = ModalRoute.of(context).settings.arguments as String;
       // tambahkan fungsi if untuk validasi penambahan note baru
       //jika id tidak sama dengan null baru cari note dari provider,
@@ -49,7 +55,7 @@ class _AddOrDetailScreenState extends State<AddOrDetailScreen> {
       if (id != null) {
         _note = Provider.of<Notes>(context).getNote(id);
       }
-      init = false;
+      _init = false;
     }
     super.didChangeDependencies();
   }
@@ -69,7 +75,13 @@ class _AddOrDetailScreenState extends State<AddOrDetailScreen> {
         actions: [
           TextButton(
             onPressed: submitNote,
-            child: Text('Simpan'),
+            // tambahkan fungsi isLoading
+            child: _isLoading
+                ? CircularProgressIndicator()
+                : Text(
+                    'Simpan',
+                    style: TextStyle(color: Colors.white),
+                  ),
           )
         ],
       ),

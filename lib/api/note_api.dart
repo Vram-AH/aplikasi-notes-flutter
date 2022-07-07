@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:notes/models/note.dart';
 import 'package:http/http.dart' as http;
@@ -11,29 +12,36 @@ class NoteApi {
     // print('pertama dijalankan');
     final uri = Uri.parse(
         'https://notes-9f78d-default-rtdb.asia-southeast1.firebasedatabase.app/notes.json');
-    // tambahkan await agar kode dibawah menunggu proses get data selesai
-    final response = await http.get(uri);
-    // print(response.body);
-    // // // tambahkan .then agar dart mengeksekusi fungsi ini jika data future sudah benar2 selesai didapatkan
-    // // response.then((value) {
-    // //   print(value.body);
-    // // });
-    // print('ketiga dijalankan');
-
-    // ubah data json menjadi map
-    final results = json.decode(response.body) as Map<String, dynamic>;
-    // looping map result ke List<Note>
+    // tambahakan try & catch untuk mengatasi error no internet/SocketException dan merubah tulisannya
     List<Note> notes = [];
+    try {
+      // tambahkan await agar kode dibawah menunggu proses get data selesai
+      final response = await http.get(uri);
+      // print(response.body);
+      // // // tambahkan .then agar dart mengeksekusi fungsi ini jika data future sudah benar2 selesai didapatkan
+      // // response.then((value) {
+      // //   print(value.body);
+      // // });
+      // print('ketiga dijalankan');
 
-    results.forEach((key, value) {
-      notes.add(Note(
-          id: key,
-          title: value['title'],
-          note: value['note'],
-          isPinned: value['isPinned'],
-          updatedAt: DateTime.parse(value['updated_at']),
-          createdAt: DateTime.parse(value['created_at'])));
-    });
+      // ubah data json menjadi map
+      final results = json.decode(response.body) as Map<String, dynamic>;
+      // looping map result ke List<Note>
+
+      results.forEach((key, value) {
+        notes.add(Note(
+            id: key,
+            title: value['title'],
+            note: value['note'],
+            isPinned: value['isPinned'],
+            updatedAt: DateTime.parse(value['updated_at']),
+            createdAt: DateTime.parse(value['created_at'])));
+      });
+    } on SocketException {
+      throw SocketException('Tidak dapat tersambung ke internet');
+    } catch (e) {
+      throw Exception('Error terjadi kesalahan');
+    }
 
     return notes;
   }
@@ -74,5 +82,27 @@ class NoteApi {
 
     final body = json.encode(map);
     final response = await http.patch(uri, body: body);
+  }
+
+  // tambahkan fungsi toggleIspined agar saat note di PIN maka terupdate pada server
+  Future<void> toggleIsPinned(
+      String id, bool isPinned, DateTime updatedAt) async {
+    final uri = Uri.parse(
+        'https://notes-9f78d-default-rtdb.asia-southeast1.firebasedatabase.app/notes/$id.json');
+    Map<String, dynamic> map = {
+      'isPinned': isPinned,
+      'updated_at': updatedAt.toIso8601String(),
+    };
+
+    final body = json.encode(map);
+    final response = await http.patch(uri, body: body);
+  }
+
+  // fungsi untuk delete dan ubah atau kirim data tersebut ke server
+  Future<void> deleteNote(String id) async {
+    final uri = Uri.parse(
+        'https://notes-9f78d-default-rtdb.asia-southeast1.firebasedatabase.app/notes/$id.json');
+
+    final response = await http.delete(uri);
   }
 }

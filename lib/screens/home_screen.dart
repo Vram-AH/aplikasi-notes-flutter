@@ -26,6 +26,13 @@ class _HomeScreenState extends State<HomeScreen> {
               child: CircularProgressIndicator(),
             );
 
+          // tambahkan fungsi untuk menampilkan error yang terjadi di tengah layar aplikasi
+          if (notesSnapshot.hasError) {
+            return Center(
+              child: Text(notesSnapshot.error.toString()),
+            );
+          }
+
           return NotesGrid();
         },
       ),

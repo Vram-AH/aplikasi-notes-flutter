@@ -38,7 +38,7 @@ class _NoteItemState extends State<NoteItem> {
             alignment: Alignment.topRight,
             child: IconButton(
               onPressed: () {
-                notesProvider.toogleIspinned(note.id);
+                notesProvider.toggleIsPinned(note.id);
               },
               icon: Icon(
                 note.isPinned ? CustomIcon.pin : CustomIcon.pin_outline,

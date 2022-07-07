@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:notes/api/note_api.dart';
 import 'package:notes/models/note.dart';
@@ -38,7 +40,15 @@ class Notes with ChangeNotifier {
   ];
 
   Future<void> getAndSetNotes() async {
-    _notes = await NoteApi().getAllNote();
+    // tambahkan fungsi try & catch untuk mengatasi error
+    try {
+      _notes = await NoteApi().getAllNote();
+    } on SocketException {
+      notifyListeners();
+      return;
+    } catch (e) {
+      return Future.error(e);
+    }
     notifyListeners();
   }
 
@@ -49,13 +59,18 @@ class Notes with ChangeNotifier {
     return tempListNote;
   }
 
-// menambahkan toogleIspinned untuk merubah isPinned yang true ke false dan sebaliknya
-  void toogleIspinned(String id) {
+// menambahkan toggleIsPinned untuk merubah isPinned yang true ke false dan sebaliknya
+  void toggleIsPinned(String id) {
     // menampung atau mencari note dengan id yang sama
     int index = notes.indexWhere((note) => note.id == id);
     // melakukan validasi
     if (index >= 0) {
       _notes[index].isPinned = !_notes[index].isPinned;
+      // ganti tanggal update pada server
+      _notes[index] = _notes[index].copyWith(updatedAt: DateTime.now());
+      // panggil fungsi toggleIsPinned pada API sebelum notifyListeners
+      NoteApi()
+          .toggleIsPinned(id, _notes[index].isPinned, _notes[index].updatedAt);
       // tambahkan notifier untuk memberi tau widget yang listen ke provider bahwa data sudah berubah
       notifyListeners();
     }
@@ -87,6 +102,8 @@ class Notes with ChangeNotifier {
 
   // fungsi untuk delete note ketika di swap kiri atau kanan
   void deleteNote(String id) {
+    // panggil fungsi delete pada note.api
+    NoteApi().deleteNote(id);
     _notes.removeWhere((note) => note.id == id);
     notifyListeners();
   }
