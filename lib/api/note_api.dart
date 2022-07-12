@@ -17,26 +17,24 @@ class NoteApi {
     try {
       // tambahkan await agar kode dibawah menunggu proses get data selesai
       final response = await http.get(uri);
-      // print(response.body);
-      // // // tambahkan .then agar dart mengeksekusi fungsi ini jika data future sudah benar2 selesai didapatkan
-      // // response.then((value) {
-      // //   print(value.body);
-      // // });
-      // print('ketiga dijalankan');
 
-      // ubah data json menjadi map
-      final results = json.decode(response.body) as Map<String, dynamic>;
-      // looping map result ke List<Note>
-
-      results.forEach((key, value) {
-        notes.add(Note(
-            id: key,
-            title: value['title'],
-            note: value['note'],
-            isPinned: value['isPinned'],
-            updatedAt: DateTime.parse(value['updated_at']),
-            createdAt: DateTime.parse(value['created_at'])));
-      });
+      print(response.statusCode);
+      if (response.statusCode == 200) {
+        // ubah data json menjadi map
+        final results = json.decode(response.body) as Map<String, dynamic>;
+        // looping map result ke List<Note>
+        results.forEach((key, value) {
+          notes.add(Note(
+              id: key,
+              title: value['title'],
+              note: value['note'],
+              isPinned: value['isPinned'],
+              updatedAt: DateTime.parse(value['updated_at']),
+              createdAt: DateTime.parse(value['created_at'])));
+        });
+      } else {
+        throw Exception();
+      }
     } on SocketException {
       throw SocketException('Tidak dapat tersambung ke internet');
     } catch (e) {
@@ -61,13 +59,22 @@ class NoteApi {
       'created_at': note.createdAt.toIso8601String()
     };
 
-    // ubah map jadi string json
-    final body = json.encode(map);
-    // 1. melakukan post
-    // 2. tambahkan await agar kode dibawah menunggu proses get data selesai
-    final response = await http.post(uri, body: body);
-
-    return json.decode(response.body)['name'];
+    try {
+      // ubah map jadi string json
+      final body = json.encode(map);
+      // 1. melakukan post
+      // 2. tambahkan await agar kode dibawah menunggu proses get data selesai
+      final response = await http.post(uri, body: body);
+      if (response.statusCode == 200) {
+        return json.decode(response.body)['name'];
+      } else {
+        throw Exception();
+      }
+    } on SocketException {
+      throw SocketException('Tidak dapat tersambung ke internet');
+    } catch (e) {
+      throw Exception('Error, terjadi kesalahan');
+    }
   }
 
   // tambahkan fungsi agar saat note diubah maka akan terupdate juga pada server
@@ -80,8 +87,15 @@ class NoteApi {
       'updated_at': note.updatedAt.toIso8601String(),
     };
 
-    final body = json.encode(map);
-    final response = await http.patch(uri, body: body);
+    try {
+      final body = json.encode(map);
+      final response = await http.patch(uri, body: body);
+      if (response.statusCode != 200) throw Exception();
+    } on SocketException {
+      throw SocketException('Tidak dapat tersambung ke internet');
+    } catch (e) {
+      throw Exception('Error, terjadi kesalahan');
+    }
   }
 
   // tambahkan fungsi toggleIspined agar saat note di PIN maka terupdate pada server
@@ -93,16 +107,30 @@ class NoteApi {
       'isPinned': isPinned,
       'updated_at': updatedAt.toIso8601String(),
     };
-
-    final body = json.encode(map);
-    final response = await http.patch(uri, body: body);
+    try {
+      final body = json.encode(map);
+      final response = await http.patch(uri, body: body);
+      if (response.statusCode != 200) throw Exception();
+    } on SocketException {
+      throw SocketException('Tidak dapat tersambung ke internet');
+    } catch (e) {
+      throw Exception('Error, terjadi kesalahan');
+    }
   }
 
   // fungsi untuk delete dan ubah atau kirim data tersebut ke server
   Future<void> deleteNote(String id) async {
     final uri = Uri.parse(
         'https://notes-9f78d-default-rtdb.asia-southeast1.firebasedatabase.app/notes/$id.json');
-
-    final response = await http.delete(uri);
+    try {
+      final response = await http.delete(uri);
+      if (response.statusCode != 200) {
+        throw Exception();
+      }
+    } on SocketException {
+      throw SocketException('Tidak dapat tersambung ke internet');
+    } catch (e) {
+      throw Exception('Error, terjadi kesalahan');
+    }
   }
 }

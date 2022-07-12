@@ -8,8 +8,11 @@ import '../models/note.dart';
 
 class NoteItem extends StatefulWidget {
   final String id;
+  // tambahkan BuildContext agar widget's element tree stabil saat menghapus note terakhir, dengan menggunakan context dari notes_grid
+  final BuildContext ctx;
   NoteItem({
     @required this.id,
+    @required this.ctx,
   });
   @override
   State<NoteItem> createState() => _NoteItemState();
@@ -25,8 +28,13 @@ class _NoteItemState extends State<NoteItem> {
     // wrap GestureDetector dengan Dismissible agar note bisa dihapus
     return Dismissible(
       key: Key(note.id),
-      onDismissed: (direction) {
-        notesProvider.deleteNote(note.id);
+      onDismissed: (direction) async {
+        notesProvider.deleteNote(note.id).catchError((onError) {
+          // tambahkan fungsi agar saat ingin munculkan SnackBar error baru, dihapus/hilangkan SnackBar sebelumnya
+          ScaffoldMessenger.of(widget.ctx).clearSnackBars();
+          ScaffoldMessenger.of(widget.ctx)
+              .showSnackBar(SnackBar(content: Text(onError.toString())));
+        });
       },
       child: GestureDetector(
         onTap: () =>
@@ -38,7 +46,12 @@ class _NoteItemState extends State<NoteItem> {
             alignment: Alignment.topRight,
             child: IconButton(
               onPressed: () {
-                notesProvider.toggleIsPinned(note.id);
+                notesProvider.toggleIsPinned(note.id).catchError((onError) {
+                  // tambahkan fungsi agar saat ingin munculkan SnackBar error baru, dihapus/hilangkan SnackBar sebelumnya
+                  ScaffoldMessenger.of(widget.ctx).clearSnackBars();
+                  ScaffoldMessenger.of(widget.ctx).showSnackBar(
+                      SnackBar(content: Text(onError.toString())));
+                });
               },
               icon: Icon(
                 note.isPinned ? CustomIcon.pin : CustomIcon.pin_outline,

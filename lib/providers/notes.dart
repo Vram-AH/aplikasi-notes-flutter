@@ -60,31 +60,42 @@ class Notes with ChangeNotifier {
   }
 
 // menambahkan toggleIsPinned untuk merubah isPinned yang true ke false dan sebaliknya
-  void toggleIsPinned(String id) {
+  Future<void> toggleIsPinned(String id) async {
     // menampung atau mencari note dengan id yang sama
     int index = notes.indexWhere((note) => note.id == id);
-    // melakukan validasi
-    if (index >= 0) {
+    try {
+      // melakukan validasi
+      if (index >= 0) {
+        _notes[index].isPinned = !_notes[index].isPinned;
+        // ganti tanggal update pada server
+        _notes[index] = _notes[index].copyWith(updatedAt: DateTime.now());
+        // tambahkan notifier untuk memberi tau widget yang listen ke provider bahwa data sudah berubah
+        notifyListeners();
+        // panggil fungsi toggleIsPinned pada API sebelum notifyListeners
+
+        await NoteApi().toggleIsPinned(
+            id, _notes[index].isPinned, _notes[index].updatedAt);
+      }
+    } catch (e) {
       _notes[index].isPinned = !_notes[index].isPinned;
-      // ganti tanggal update pada server
-      _notes[index] = _notes[index].copyWith(updatedAt: DateTime.now());
-      // panggil fungsi toggleIsPinned pada API sebelum notifyListeners
-      NoteApi()
-          .toggleIsPinned(id, _notes[index].isPinned, _notes[index].updatedAt);
-      // tambahkan notifier untuk memberi tau widget yang listen ke provider bahwa data sudah berubah
       notifyListeners();
+      return Future.error(e);
     }
   }
 
 // 1. fungsi addNote untuk menambahkan note ke provider
   Future<void> addNote(Note note) async {
-    // 2. panggil fungsi postNote dan tambahkan await, future dan async
-    // 3. tampung return id dari API dengan membuat String id:
-    String id = await NoteApi().postNote(note);
-    // 4. sebelum tambahkan notes ke dalam _notes buat note.copyWith(id: id saat kita post)
-    note = note.copyWith(id: id);
-    _notes.add(note);
-    notifyListeners();
+    try {
+      // 2. panggil fungsi postNote dan tambahkan await, future dan async
+      // 3. tampung return id dari API dengan membuat String id:
+      String id = await NoteApi().postNote(note);
+      // 4. sebelum tambahkan notes ke dalam _notes buat note.copyWith(id: id saat kita post)
+      note = note.copyWith(id: id);
+      _notes.add(note);
+      notifyListeners();
+    } catch (e) {
+      return Future.error(e);
+    }
   }
 
   Note getNote(String id) {
@@ -93,18 +104,32 @@ class Notes with ChangeNotifier {
 
   // Fungsi untuk update
   Future<void> updateNote(Note newNote) async {
-    // sebelum updateNote ke dalam listnote panggil dulu fungsi NoteApi
-    await NoteApi().updateNote(newNote);
-    int index = _notes.indexWhere((note) => note.id == newNote.id);
-    _notes[index] = newNote;
-    notifyListeners();
+    try {
+      // sebelum updateNote ke dalam listnote panggil dulu fungsi NoteApi
+      await NoteApi().updateNote(newNote);
+      int index = _notes.indexWhere((note) => note.id == newNote.id);
+      _notes[index] = newNote;
+      notifyListeners();
+    } catch (e) {
+      return Future.error(e);
+    }
   }
 
   // fungsi untuk delete note ketika di swap kiri atau kanan
-  void deleteNote(String id) {
-    // panggil fungsi delete pada note.api
-    NoteApi().deleteNote(id);
-    _notes.removeWhere((note) => note.id == id);
-    notifyListeners();
+  Future<void> deleteNote(String id) async {
+    // tambahkan fungsi agar pada saat error apa yang sudah di remove dibalikkan lagi
+    int index = _notes.indexWhere((note) => note.id == id);
+    Note tempNote = _notes[index];
+    try {
+      _notes.removeAt(index);
+      // _notes.removeWhere((note) => note.id == id);
+      notifyListeners();
+      // panggil fungsi delete pada note.api
+      await NoteApi().deleteNote(id);
+    } catch (e) {
+      _notes.insert(index, tempNote);
+      notifyListeners();
+      return Future.error(e);
+    }
   }
 }

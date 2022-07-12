@@ -21,6 +21,7 @@ class _NotesGridState extends State<NotesGrid> {
         itemCount: listNote.length,
         itemBuilder: (ctx, index) => NoteItem(
           id: listNote[index].id,
+          ctx: context,
         ),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
