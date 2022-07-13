@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:notes/api/note_api.dart';
+import 'package:notes/database/database_helper.dart';
 import 'package:notes/models/note.dart';
 
 class Notes with ChangeNotifier {
@@ -43,13 +44,16 @@ class Notes with ChangeNotifier {
     // tambahkan fungsi try & catch untuk mengatasi error
     try {
       _notes = await NoteApi().getAllNote();
-    } on SocketException {
+      // fungsi untuk gunakan getAllNote ke provider
+      await DatabaseHelper().insertAllNote(_notes);
       notifyListeners();
-      return;
+    } on SocketException {
+      // tambahkan fungsi agar saat internet tidak tersambung yang ditampilkan adalah data dari database
+      _notes = await DatabaseHelper().getAllNote();
+      notifyListeners();
     } catch (e) {
       return Future.error(e);
     }
-    notifyListeners();
   }
 
   List<Note> get notes {
@@ -75,6 +79,12 @@ class Notes with ChangeNotifier {
 
         await NoteApi().toggleIsPinned(
             id, _notes[index].isPinned, _notes[index].updatedAt);
+        // setelah update toggleIspinned ke API maka akan update toggleIspinned di databaseHelper
+        await DatabaseHelper().toogleIspinned(
+          id,
+          _notes[index].isPinned,
+          _notes[index].updatedAt,
+        );
       }
     } catch (e) {
       _notes[index].isPinned = !_notes[index].isPinned;
@@ -107,6 +117,8 @@ class Notes with ChangeNotifier {
     try {
       // sebelum updateNote ke dalam listnote panggil dulu fungsi NoteApi
       await NoteApi().updateNote(newNote);
+      // setelah update note ke API maka akan update note di databaseHelper
+      await DatabaseHelper().updateNote(newNote);
       int index = _notes.indexWhere((note) => note.id == newNote.id);
       _notes[index] = newNote;
       notifyListeners();
@@ -126,6 +138,8 @@ class Notes with ChangeNotifier {
       notifyListeners();
       // panggil fungsi delete pada note.api
       await NoteApi().deleteNote(id);
+      // setelah delete note ke API maka akan delete note di databaseHelper
+      await DatabaseHelper().deleteNote(id);
     } catch (e) {
       _notes.insert(index, tempNote);
       notifyListeners();
