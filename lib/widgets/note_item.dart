@@ -21,7 +21,7 @@ class NoteItem extends StatefulWidget {
 class _NoteItemState extends State<NoteItem> {
   @override
   Widget build(BuildContext context) {
-    //fungsi untuk mengakses provider
+    //fungsi untuk mengakses atau listen provider
     final notesProvider = Provider.of<Notes>(context, listen: false);
     Note note = notesProvider.getNote(widget.id);
     //wrap dengan GestureDetector untuk menavigasi note ke addOrDetailScreen

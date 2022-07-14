@@ -76,7 +76,6 @@ class Notes with ChangeNotifier {
         // tambahkan notifier untuk memberi tau widget yang listen ke provider bahwa data sudah berubah
         notifyListeners();
         // panggil fungsi toggleIsPinned pada API sebelum notifyListeners
-
         await NoteApi().toggleIsPinned(
             id, _notes[index].isPinned, _notes[index].updatedAt);
         // setelah update toggleIspinned ke API maka akan update toggleIspinned di databaseHelper
@@ -101,6 +100,8 @@ class Notes with ChangeNotifier {
       String id = await NoteApi().postNote(note);
       // 4. sebelum tambahkan notes ke dalam _notes buat note.copyWith(id: id saat kita post)
       note = note.copyWith(id: id);
+      // setelah add note ke API maka akan add note di databaseHelper
+      await DatabaseHelper().insertNote(note);
       _notes.add(note);
       notifyListeners();
     } catch (e) {

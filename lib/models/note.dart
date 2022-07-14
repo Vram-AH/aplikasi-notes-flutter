@@ -23,6 +23,7 @@ class Note {
         title = data[DatabaseHelper.TABLE_NOTES_TITLE],
         note = data[DatabaseHelper.TABLE_NOTES_NOTE],
         isPinned = data[DatabaseHelper.TABLE_NOTES_ISPINNED] == 1,
+        // isPinned = data['test_column_baru'] == 1,
         updatedAt = DateTime.parse(data[DatabaseHelper.TABLE_NOTES_UPDATEDAT]),
         createdAt = DateTime.parse(data[DatabaseHelper.TABLE_NOTES_CREATEDAT]);
 

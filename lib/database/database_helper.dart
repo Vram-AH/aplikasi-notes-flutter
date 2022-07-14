@@ -15,7 +15,7 @@ class DatabaseHelper {
   // buat fungsi untuk open database
   static Future<Database> init() async {
     final dbPath = await getDatabasesPath();
-    return openDatabase(join(dbPath, 'notes.db'), version: 1,
+    return openDatabase(join(dbPath, 'notes.db'), version: 3,
         onCreate: (newDb, version) {
       newDb.execute('''
         CREATE TABLE $TABLE_NOTES (
@@ -27,6 +27,23 @@ class DatabaseHelper {
           $TABLE_NOTES_CREATEDAT TEXT        
         )
           ''');
+    },
+        // fungsi untuk menambah table atau merubah nama colomn atau nama table (upgrade)
+        onUpgrade: (db, oldVersion, newVersion) {
+      if (oldVersion == 1 && newVersion == 2) {
+        db.execute('''
+        CREATE TABLE test_upgrade(
+          id TEXT PRIMARY KEY,
+          title TEXT
+        )
+        ''');
+      }
+      // test upgrade fungsi version 3
+      if (oldVersion == 2 && newVersion == 3) {
+        db.execute('''ALTER TABLE $TABLE_NOTES
+        ADD COLUMN test_column_baru INTEGER DEFAULT 0        
+        ''');
+      }
     });
   }
 
@@ -86,5 +103,14 @@ class DatabaseHelper {
   Future<void> deleteNote(String id) async {
     final db = await DatabaseHelper.init();
     await db.delete(TABLE_NOTES, where: '$TABLE_NOTES_ID = ?', whereArgs: [id]);
+  }
+
+  // fungsi untuk insert ke database saat tambah note baru
+  Future<void> insertNote(Note note) async {
+    final db = await DatabaseHelper.init();
+    await db.insert(
+      TABLE_NOTES,
+      note.toDb(),
+    );
   }
 }
