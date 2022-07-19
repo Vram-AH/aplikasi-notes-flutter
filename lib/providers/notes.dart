@@ -64,7 +64,7 @@ class Notes with ChangeNotifier {
   }
 
 // menambahkan toggleIsPinned untuk merubah isPinned yang true ke false dan sebaliknya
-  Future<void> toggleIsPinned(String id) async {
+  Future<void> toggleIsPinned(String? id) async {
     // menampung atau mencari note dengan id yang sama
     int index = notes.indexWhere((note) => note.id == id);
     try {
@@ -77,12 +77,12 @@ class Notes with ChangeNotifier {
         notifyListeners();
         // panggil fungsi toggleIsPinned pada API sebelum notifyListeners
         await NoteApi().toggleIsPinned(
-            id, _notes[index].isPinned, _notes[index].updatedAt);
+            id, _notes[index].isPinned, _notes[index].updatedAt!);
         // setelah update toggleIspinned ke API maka akan update toggleIspinned di databaseHelper
         await DatabaseHelper().toogleIspinned(
           id,
           _notes[index].isPinned,
-          _notes[index].updatedAt,
+          _notes[index].updatedAt!,
         );
       }
     } catch (e) {
@@ -97,7 +97,7 @@ class Notes with ChangeNotifier {
     try {
       // 2. panggil fungsi postNote dan tambahkan await, future dan async
       // 3. tampung return id dari API dengan membuat String id:
-      String id = await NoteApi().postNote(note);
+      String? id = await NoteApi().postNote(note);
       // 4. sebelum tambahkan notes ke dalam _notes buat note.copyWith(id: id saat kita post)
       note = note.copyWith(id: id);
       // setelah add note ke API maka akan add note di databaseHelper
@@ -109,7 +109,7 @@ class Notes with ChangeNotifier {
     }
   }
 
-  Note getNote(String id) {
+  Note getNote(String? id) {
     return _notes.firstWhere((note) => note.id == id);
   }
 
@@ -129,7 +129,7 @@ class Notes with ChangeNotifier {
   }
 
   // fungsi untuk delete note ketika di swap kiri atau kanan
-  Future<void> deleteNote(String id) async {
+  Future<void> deleteNote(String? id) async {
     // tambahkan fungsi agar pada saat error apa yang sudah di remove dibalikkan lagi
     int index = _notes.indexWhere((note) => note.id == id);
     Note tempNote = _notes[index];

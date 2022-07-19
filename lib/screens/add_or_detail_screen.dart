@@ -14,11 +14,11 @@ class AddOrDetailScreen extends StatefulWidget {
 
 class _AddOrDetailScreenState extends State<AddOrDetailScreen> {
   Note _note = Note(
-    id: null,
+    id: '',
     title: '',
     note: '',
-    updatedAt: null,
-    createdAt: null,
+    // updatedAt: null,
+    // createdAt: null,
   );
 
   bool _init = true;
@@ -28,7 +28,10 @@ class _AddOrDetailScreenState extends State<AddOrDetailScreen> {
   final _formKey = GlobalKey<FormState>();
 
   void submitNote() async {
-    _formKey.currentState.save();
+    // tambahkan validasi (if) karena migrasi ke null
+    if (_formKey.currentState != null) {
+      _formKey.currentState!.save();
+    }
     // set isLoading jadi true
     setState(() {
       _isLoading = true;
@@ -66,7 +69,7 @@ class _AddOrDetailScreenState extends State<AddOrDetailScreen> {
   @override
   void didChangeDependencies() {
     if (_init) {
-      String id = ModalRoute.of(context).settings.arguments as String;
+      String? id = ModalRoute.of(context)!.settings.arguments as String?;
       // tambahkan fungsi if untuk validasi penambahan note baru
       //jika id tidak sama dengan null baru cari note dari provider,
       //jika null berarti note baru dan tidak perlu cari data atau id dalam provider
@@ -147,7 +150,7 @@ class _AddOrDetailScreenState extends State<AddOrDetailScreen> {
             Positioned(
               bottom: 10,
               right: 10,
-              child: Text('Terakhir diubah ${_convertDate(_note.updatedAt)}'),
+              child: Text('Terakhir diubah ${_convertDate(_note.updatedAt!)}'),
             ),
         ],
       ),

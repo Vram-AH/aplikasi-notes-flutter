@@ -46,7 +46,7 @@ class NoteApi {
 
   // Buat fungsi note API untuk post note baru
   // tambahkan Future pada string dan async agar fungsi await bisa digunakan
-  Future<String> postNote(Note note) async {
+  Future<String?> postNote(Note note) async {
     final uri = Uri.parse(
         'https://notes-9f78d-default-rtdb.asia-southeast1.firebasedatabase.app/notes.json');
     // buat map untuk isi/body yang akan dikirim ke server
@@ -54,9 +54,12 @@ class NoteApi {
       'title': note.title,
       'note': note.note,
       'isPinned': note.isPinned,
-      // karena encode akan mengubah data menjadi string json maka note.updatedAt dan note.createdAt di ubah menjadi string dengan toIso8601String
-      'updated_at': note.updatedAt.toIso8601String(),
-      'created_at': note.createdAt.toIso8601String()
+      //1. karena encode akan mengubah data menjadi string json maka note.updatedAt dan note.createdAt di ubah menjadi string dengan toIso8601String
+      //2. tambahkan validasi karena migrasi ke null agar tidak error
+      'updated_at':
+          note.updatedAt == null ? null : note.updatedAt!.toIso8601String(),
+      'created_at':
+          note.createdAt == null ? null : note.createdAt!.toIso8601String()
     };
 
     try {
@@ -84,7 +87,7 @@ class NoteApi {
     Map<String, dynamic> map = {
       'title': note.title,
       'note': note.note,
-      'updated_at': note.updatedAt.toIso8601String(),
+      'updated_at': note.updatedAt!.toIso8601String(),
     };
 
     try {
@@ -100,7 +103,7 @@ class NoteApi {
 
   // tambahkan fungsi toggleIspined agar saat note di PIN maka terupdate pada server
   Future<void> toggleIsPinned(
-      String id, bool isPinned, DateTime updatedAt) async {
+      String? id, bool? isPinned, DateTime updatedAt) async {
     final uri = Uri.parse(
         'https://notes-9f78d-default-rtdb.asia-southeast1.firebasedatabase.app/notes/$id.json');
     Map<String, dynamic> map = {
@@ -119,9 +122,9 @@ class NoteApi {
   }
 
   // fungsi untuk delete dan ubah atau kirim data tersebut ke server
-  Future<void> deleteNote(String id) async {
+  Future<void> deleteNote(String? id) async {
     final uri = Uri.parse(
-        'https://notes-9f78d-default-rtdb.asia-southeast1.firebasedatabase.app/notes/$id.json');
+        'https://notes-9f78d-default-rtdb.asia-southeast1.firebasedatabase.app/notes/.json');
     try {
       final response = await http.delete(uri);
       if (response.statusCode != 200) {

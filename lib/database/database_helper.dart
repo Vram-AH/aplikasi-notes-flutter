@@ -86,7 +86,7 @@ class DatabaseHelper {
 
   // fungsi untuk update toogleIspinned pada database helper
   Future<void> toogleIspinned(
-      String id, bool isPinned, DateTime updatedAt) async {
+      String? id, bool isPinned, DateTime updatedAt) async {
     final db = await DatabaseHelper.init();
     await db.update(
       TABLE_NOTES,
@@ -100,7 +100,7 @@ class DatabaseHelper {
   }
 
   // fungsi untuk update deleteNote pada database helper
-  Future<void> deleteNote(String id) async {
+  Future<void> deleteNote(String? id) async {
     final db = await DatabaseHelper.init();
     await db.delete(TABLE_NOTES, where: '$TABLE_NOTES_ID = ?', whereArgs: [id]);
   }

@@ -7,12 +7,12 @@ import 'package:provider/provider.dart';
 import '../models/note.dart';
 
 class NoteItem extends StatefulWidget {
-  final String id;
+  final String? id;
   // tambahkan BuildContext agar widget's element tree stabil saat menghapus note terakhir, dengan menggunakan context dari notes_grid
   final BuildContext ctx;
   NoteItem({
-    @required this.id,
-    @required this.ctx,
+    required this.id,
+    required this.ctx,
   });
   @override
   State<NoteItem> createState() => _NoteItemState();
