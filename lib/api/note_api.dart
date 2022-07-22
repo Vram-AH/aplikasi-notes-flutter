@@ -20,6 +20,8 @@ class NoteApi {
 
       print(response.statusCode);
       if (response.statusCode == 200) {
+        // tambahkan validasi agar saat ambil data note kosong di firebase tidak error
+        if (response.body == "null") return notes;
         // ubah data json menjadi map
         final results = json.decode(response.body) as Map<String, dynamic>;
         // looping map result ke List<Note>
@@ -124,7 +126,7 @@ class NoteApi {
   // fungsi untuk delete dan ubah atau kirim data tersebut ke server
   Future<void> deleteNote(String? id) async {
     final uri = Uri.parse(
-        'https://notes-9f78d-default-rtdb.asia-southeast1.firebasedatabase.app/notes/.json');
+        'https://notes-9f78d-default-rtdb.asia-southeast1.firebasedatabase.app/notes/$id.json');
     try {
       final response = await http.delete(uri);
       if (response.statusCode != 200) {

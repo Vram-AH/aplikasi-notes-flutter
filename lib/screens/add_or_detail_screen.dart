@@ -40,7 +40,8 @@ class _AddOrDetailScreenState extends State<AddOrDetailScreen> {
       final now = DateTime.now();
       _note = _note.copyWith(updatedAt: now, createdAt: now);
       final notesProvider = Provider.of<Notes>(context, listen: false);
-      if (_note.id == null) {
+      // ubah _note.id == null ke _note.id.isEmpty karena id sudah diinitialisasi bukan null saat migrasi ke null safety
+      if (_note.id.isEmpty) {
         await notesProvider.addNote(_note);
       } else {
         await notesProvider.updateNote(_note);
