@@ -66,7 +66,7 @@ class Notes with ChangeNotifier {
 // menambahkan toggleIsPinned untuk merubah isPinned yang true ke false dan sebaliknya
   Future<void> toggleIsPinned(String? id) async {
     // menampung atau mencari note dengan id yang sama
-    int index = notes.indexWhere((note) => note.id == id);
+    int index = _notes.indexWhere((note) => note.id == id);
     try {
       // melakukan validasi
       if (index >= 0) {
